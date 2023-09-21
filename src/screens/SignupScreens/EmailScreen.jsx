@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { View, StyleSheet, Image } from 'react-native';
 import COLORS from '../../values/COLORS';
 import { Button, Text, TextInput } from 'react-native-paper';
+import userinfo from '../NewUserInfo';
 
 const EmailScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
 
-    const handleLogin = () => {
-        console.log('Email:', email);
+    const handleSignup = () => {
+        userinfo.email = email
+        navigation.navigate("PasswordScreen")
     };
 
     return (
@@ -24,7 +25,7 @@ const EmailScreen = ({ navigation }) => {
                 style={styles.input}
             />
 
-            <Button style={styles.button} mode="contained" buttonColor="#991b1b" onPress={() => {navigation.navigate("PasswordScreen")}}>Next</Button>
+            <Button style={styles.button} mode="contained" buttonColor="#991b1b" onPress={handleSignup}>Next</Button>
             <Text style={styles.noAcc} onPress={() => {navigation.navigate("Login")}}>Have An Account .</Text>
         </View>
     );

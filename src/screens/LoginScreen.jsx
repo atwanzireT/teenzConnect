@@ -3,40 +3,28 @@ import { View, StyleSheet, Image } from 'react-native';
 import COLORS from '../values/COLORS';
 import { Button, Text, TextInput } from 'react-native-paper';
 import axios from 'axios';
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
 
-    const handleLogin = async () => {
-        try {
-          
-        //   const response = await axios.post(
-        //     "https://34f9-41-75-174-157.ngrok-free.app/v1/api/auth/login",
-        //     {
-        //       email,
-        //       password,
-        //     }
-        //   );
-        //   console.log({"data":data});
-        //   const token = response.data.token;
-        //   console.log(token);
-      
-        //   // Assuming a successful login returns a token, you can store it securely.
-        //   // AsyncStorage is used here for token storage, and you should import it at the top of your component file.
-        //   await AsyncStorage.setItem("authToken", token);
-      
-          // After successful login, navigate to the MainScreen.
-          navigation.navigate("MainScreen");
-        } catch (error) {
-          // Handle authentication errors here.
-          console.log(error);
-          // You can show an error message to the user or perform other error handling actions.
-        }
-      };
-      
+    const handleLogin = () => {
+        const auth = getAuth();
+        signInWithEmailAndPassword(auth, email, password)
+            .then((userCredential) => {
+                // Signed in 
+                const user = userCredential.user;
+                navigation.navigate("MainScreen");
+                console.log("Logged in: ", user);
+            })
+            .catch((error) => {
+                const errorCode = error.code;
+                const errorMessage = error.message;
+            });
+    };
+
     return (
         <View style={styles.container}>
             <Image source={require('../../assets/icon.png')} style={styles.logo} />
@@ -60,7 +48,7 @@ const LoginScreen = ({ navigation }) => {
                 style={styles.input}
             />
             <Button style={styles.button} mode="contained" buttonColor="#991b1b" onPress={handleLogin}>Login</Button>
-            <Button style={styles.noAcc} onPress={() => {navigation.navigate("UsernameScreen")}}>Don't Have An Account .</Button>
+            <Button style={styles.noAcc} onPress={() => { navigation.navigate("UsernameScreen") }}>Don't Have An Account .</Button>
         </View>
     );
 };
@@ -90,9 +78,9 @@ const styles = StyleSheet.create({
         height: 90,
         resizeMode: 'contain',
     },
-    noAcc:{
-        marginTop:20,
-        fontSize:16,
+    noAcc: {
+        marginTop: 20,
+        fontSize: 16,
     }
 });
 

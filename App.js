@@ -1,14 +1,19 @@
-import { StatusBar } from 'expo-status-bar';
 import { StyleSheet, Text, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import SplashScreen from './src/screens/SplashScreen';
 import LoginScreen from './src/screens/LoginScreen';
-import { Header } from '@react-navigation/stack';
 import UsernameScreen from './src/screens/SignupScreens/UsernameScreen';
 import EmailScreen from './src/screens/SignupScreens/EmailScreen';
 import PasswordScreen from './src/screens/SignupScreens/PasswordScreen';
 import MainScreen from './src/screens/MainScreen';
+import { firebaseConfig } from './src/config/firebaseConfig';
+import {initializeApp} from 'firebase/app';
+import { getAuth } from 'firebase/auth';
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+
 
 const Stack = createNativeStackNavigator();
 

@@ -22,7 +22,10 @@ const customstyles = StyleSheet.create({
     },
     text_red_800:{
         color:COLORS.red_800,
-    }
+    },
+    textbold_800:{
+        fontWeight:800,
+    },
 });
 
 
