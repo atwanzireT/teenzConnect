@@ -5,32 +5,63 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from 'expo-image-picker';
 import customstyles from "../values/styles";
-import COLORS from "../values/COLORS";
-import api_host from "../values/CONSTANTS";
-// import { getDatabase, ref, set } from "firebase/database";
-import { getStorage, ref, uploadBytes } from "firebase/storage";
-import * as FileSystem from 'expo-file-system';
+import { getStorage, ref as storageRef, uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase/storage";
+import { getDatabase, ref as databaseRef, push, set } from "firebase/database";
+
 
 const PostScreen = () => {
-    const [text, setText] = useState("");
+    const [postText, setPostText] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
+
 
 
     const sendPost = async () => {
         try {
-           
-            const storage = getStorage();
-            const storageRef = ref(storage, 'some-child');
+            if (!selectedImage && !text) {
+                // Handle the case where neither an image nor text is provided
+                console.warn('No image or text provided for the post.');
+                return;
+            }
 
-            // 'file' comes from the Blob or File API
-            uploadBytes(storageRef, file).then((snapshot) => {
-                console.log('Uploaded a blob or file!');
-            });
+            const storage = getStorage();
+            const storageReference = storageRef(storage, 'your-storage-folder/' + selectedImage.uri.split('/').pop());
+
+            // Upload the selected image to Firebase Storage
+            const response = await fetch(selectedImage.uri);
+            const blob = await response.blob();
+
+            const uploadTask = uploadBytesResumable(storageReference, blob);
+
+            // Wait for the image upload to complete
+            await uploadTask;
+
+            // Get the download URL of the uploaded image
+            const downloadURL = await getDownloadURL(storageReference);
+
+            console.log('Image uploaded successfully. Download URL:', downloadURL);
+
+            // Now, save both the text and image download URL to Firebase Realtime Database
+            const db = getDatabase();
+            const postsReference = databaseRef(db, 'posts');
+
+            const newPostRef = push(postsReference);
+            const newPostKey = newPostRef.key;
+
+            const postData = {
+                text: postText || "",  // If text is not provided, set it to an empty string
+                image: downloadURL || "",
+            };
+
+            // Use set to set data at a specific path
+            await set(newPostRef, postData);
+
+            console.log('Post saved to Firebase Realtime Database:', postData);
+
+            // TODO: You can now perform any additional actions, such as navigating to a different screen or showing a success message to the user.
         } catch (error) {
             console.error('Error sending post:', error);
         }
     };
-    
 
     const pickImage = async () => {
         try {
@@ -67,6 +98,8 @@ const PostScreen = () => {
                 <TextInput
                     placeholder="What is happening ..."
                     style={styles.postTextArea}
+                    value={postText}
+                    onChangeText={(postText) => setPostText(postText)}
                     multiline={true}
                 />
                 <View style={styles.imgcard}>
