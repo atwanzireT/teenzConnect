@@ -4,6 +4,8 @@ import COLORS from '../../values/COLORS';
 import { Button, Text, TextInput } from 'react-native-paper';
 import userinfo from '../NewUserInfo';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
+import firebase from 'firebase/app';
+import { set, ref as dbref, getDatabase } from 'firebase/database';
 
 
 const PasswordScreen = ({ navigation }) => {
@@ -14,17 +16,30 @@ const PasswordScreen = ({ navigation }) => {
         userinfo.password = password
         console.log(userinfo);
 
-        const userCredential = await createUserWithEmailAndPassword(auth ,userinfo.email, userinfo.password)
+        await createUserWithEmailAndPassword(auth ,userinfo.email, userinfo.password)
             .then(() => {
-                navigation.navigate("MainScreen")
+                const user = auth.currentUser;
+                const db = getDatabase();
+                    set(dbref(db, 'users/' + user.uid), {
+                        displayname: userinfo.username,
+                        email: userinfo.email,
+                        uid: user.uid || "",
+                        profile_img: "",
+                    }).then(() => {
+                        console.log('User data saved to the database.');
+                        console.log('User email:', user.email);
+                        navigation.navigate("MainScreen");
+                    }).catch((error) => {
+                        console.error('Error saving user data:', error);
+                    });
             })
             .catch((error) => {
                 if (error.code === 'auth/email-already-in-use') {
-                    console.log('That email address is already in use!');
+                    alert('That email address is already in use!');
                 }
 
                 if (error.code === 'auth/invalid-email') {
-                    console.log('That email address is invalid!');
+                   alert('That email address is invalid!');
                 }
 
                 console.error(error);

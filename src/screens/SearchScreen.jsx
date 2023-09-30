@@ -15,7 +15,7 @@ export default function SearchScreen() {
                         outlineColor='#991b1b'
                         left={<TextInput.Icon icon="search-web" />}
                     />
-                    <Text style={[customstyles.text_red_800, customstyles.textbold_800, styles.fontText]}>HipTeenz For You.</Text>
+                    <Text style={[customstyles.textbold_800, styles.fontText]}>HipTeenz For You.</Text>
                     <SearchCard />
                     <SearchCard />
                     <SearchCard />

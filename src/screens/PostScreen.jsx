@@ -1,24 +1,37 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, TouchableOpacity, TextInput, View } from "react-native";
-import { Card, Text } from "react-native-paper";
+import { ActivityIndicator, Card, Text } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from 'expo-image-picker';
 import customstyles from "../values/styles";
 import { getStorage, ref as storageRef, uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { getDatabase, ref as databaseRef, push, set } from "firebase/database";
+import { onAuthStateChanged, auth, getAuth } from "firebase/auth";
 
 
-const PostScreen = () => {
+const PostScreen = ({navigation}) => {
     const [postText, setPostText] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [userdata, setUserdata] = useState(null);
 
-
+    useEffect(() => {
+        const auth = getAuth();
+        onAuthStateChanged(auth, (user) => {
+            if (user){
+                setUserdata(user);
+                console.log(userdata);
+            }else{
+                alert("Login to Post !");
+            }
+        })
+    })
 
     const sendPost = async () => {
+        setLoading(true);
         try {
             if (!selectedImage && !text) {
-                // Handle the case where neither an image nor text is provided
                 console.warn('No image or text provided for the post.');
                 return;
             }
@@ -48,6 +61,7 @@ const PostScreen = () => {
             const newPostKey = newPostRef.key;
 
             const postData = {
+                user : userdata.uid || "",
                 text: postText || "",  // If text is not provided, set it to an empty string
                 image: downloadURL || "",
             };
@@ -56,10 +70,14 @@ const PostScreen = () => {
             await set(newPostRef, postData);
 
             console.log('Post saved to Firebase Realtime Database:', postData);
+            setLoading(false);
+            setSelectedImage(null);
+            setPostText(null);
+            navigation.navigate("Home");
 
-            // TODO: You can now perform any additional actions, such as navigating to a different screen or showing a success message to the user.
         } catch (error) {
             console.error('Error sending post:', error);
+            setLoading(false);
         }
     };
 
@@ -91,7 +109,7 @@ const PostScreen = () => {
                     style={styles.profileImage}
                     source={require("../../assets/profile.png")}
                 />
-                <Text style={[customstyles.text_red_800, customstyles.textbold_800, styles.textstyle]}>Create Post</Text>
+                <Text style={[customstyles.textbold_800, styles.textstyle]}>Create Post</Text>
             </View>
 
             <ScrollView>
@@ -115,11 +133,12 @@ const PostScreen = () => {
                     <Ionicons name="play-circle" size={40} style={styles.icon} />
                     <Ionicons name="location" size={40} style={styles.icon} />
                 </View>
-                <TouchableOpacity onPress={sendPost}>
-                    <Ionicons name="send" size={40} style={styles.icon} />
-                </TouchableOpacity>
+                {loading ? <ActivityIndicator size="small" /> :
+                    <TouchableOpacity onPress={sendPost}>
+                        <Ionicons name="send" color = "#991b1b" size={40} style={styles.icon} />
+                    </TouchableOpacity>}
             </View>
-        </SafeAreaProvider>
+        </SafeAreaProvider >
     );
 };
 
@@ -146,6 +165,7 @@ const styles = StyleSheet.create({
     },
     textstyle: {
         fontSize: 24,
+        textAlignVertical: "center",
     },
     postTextArea: {
         width: '100%',

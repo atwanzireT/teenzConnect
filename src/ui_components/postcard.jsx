@@ -5,23 +5,24 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import COLORS from "../values/COLORS";
 import customstyles from "../values/styles";
 
-export default function PostCard() {
+export default function PostCard(props) {
+  const { username, postTitle, profileImageSource, postImageSource} = props;
   return (
     <View style={styles.container}>
       <View style={styles.userInfo}>
         <Image
           style={styles.profileImage}
-          source={require("../../assets/profile.png")}
+          source={{uri: profileImageSource}}
         />
         <View style={styles.userInfoText}>
-          <Text style={styles.textBold800}>KusaFuaza</Text>
-          <Text>House Party @Spurs</Text>
+          <Text style={styles.textBold800}>{username}</Text>
+          <Text>{postTitle}</Text>
         </View>
       </View>
 
       <Image
         style={styles.postImage}
-        source={require("../../assets/post.jpg")}
+        source={{ uri: postImageSource }}
       />
 
       <View style={styles.actions}>
@@ -63,7 +64,7 @@ const styles = StyleSheet.create({
   postImage: {
     width: "100%",
     height: undefined,
-    aspectRatio: 16 / 9,
+    aspectRatio: 9 / 9,
   },
   actions: {
     flexDirection: "row",

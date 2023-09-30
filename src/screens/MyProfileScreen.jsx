@@ -1,11 +1,16 @@
 // Import necessary components and libraries
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { Button } from 'react-native-paper';
 import COLORS from '../values/COLORS';
 
 // Create a functional component for the profile page
 const MyProfileScreen = () => {
+  const [userData, setUserData] = useState([]);
+
+  useEffect(()=>{
+    
+  })
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
