@@ -3,14 +3,53 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, Image, ScrollView, TouchableOpacity } from 'react-native';
 import { Button } from 'react-native-paper';
 import COLORS from '../values/COLORS';
+import { ref as dbref, child, get, DataSnapshot, onValue } from "firebase/database";
+import { firebase_database, firebase_auth } from '../config/firebaseConfig';
 
 // Create a functional component for the profile page
 const MyProfileScreen = () => {
-  const [userData, setUserData] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [userid, setUserId] = useState(null);
 
-  useEffect(()=>{
-    
-  })
+  const uid = firebase_auth.currentUser?.uid;
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (uid) {
+        const dbRef = dbref(firebase_database, `users/${uid}`);
+        onValue(dbRef, (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            setUserData(data); // Update user data directly
+            console.log("User name:", data.displayname);
+          } else {
+            setUserData(null);
+            console.log("No User Data Found.");
+          }
+        });
+      }
+    };
+
+    fetchUserData();
+  }, [uid]);
+
+  // useEffect(() =>{
+  //   const fetchUserPosts = async() => {
+  //     if (uid) {
+  //       const postRef = dbref(firebase_database, `posts`);
+  //       onValue(postRef, (snapshot) => {
+  //         const postdata = snapshot.val();
+  //         if (data){
+  //           console.log(postdata);
+  //         }else{
+  //           console.log("No user posts found .")
+  //         }
+  //       })
+  //     }
+  //   }
+  //   fetchUserPosts();
+  // }, [])
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.header}>
@@ -18,8 +57,8 @@ const MyProfileScreen = () => {
           source={{ uri: 'https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg' }}
           style={styles.profileImage}
         />
-        <Text style={styles.username}>Kusa Fuaza</Text>
-        <Text style={styles.bio}>The Future the medic beyonds #stdenisssebugwawo</Text>
+        <Text style={styles.username}>{userData?.displayname}</Text>
+        <Text style={styles.bio}>{userData?.bio || ""}</Text>
       </View>
 
       <View style={styles.stats}>

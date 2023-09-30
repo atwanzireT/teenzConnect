@@ -14,7 +14,6 @@ export default function HomeScreen({navigation}) {
     const auth = getAuth();
 
     useEffect(() => {
-        getCurrentUser();
         const dbRef = ref(getDatabase(), "posts");
 
         onValue(dbRef, (snapshot) => {
@@ -22,6 +21,7 @@ export default function HomeScreen({navigation}) {
             if (data) {
                 const postsArray = Object.values(data);
                 setPostData(postsArray);
+                // console.log(postsArray);
             } else {
                 setPostData([]);
             }
@@ -33,22 +33,26 @@ export default function HomeScreen({navigation}) {
         };
     }, []);
 
-    const getCurrentUser = () => {
-        try {
-          const auth = getAuth(); 
-          const user = auth.currentUser;
-      
-          if (user) {
-            console.log(user)
-            setUser(user);
-          } else {
-            console.log('No user is currently authenticated.');
+
+
+    useEffect(() => {
+            try {
+              const auth = getAuth(); 
+              const user = auth.currentUser;
+          
+              if (user) {
+                // console.log(user)
+                setUser(user);
+              } else {
+                console.log('No user is currently authenticated.');
+              }
+            } catch (error) {
+              console.error('Error:', error);
+              alert('An error occurred during authentication.');
+            }
           }
-        } catch (error) {
-          console.error('Error:', error);
-          alert('An error occurred during authentication.');
-        }
-      };
+    );
+
       
 
     return (
@@ -59,7 +63,7 @@ export default function HomeScreen({navigation}) {
                     <TouchableOpacity onPress={() => {user ? navigation.navigate("MyProfile") : navigation.navigate("Login") }}>
                         <Ionicons name="person-circle" size={32} marginRight={10} color="black" />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {user ? navigation.navigate("Settings") : alert("User not Authenticated")}}>
+                    <TouchableOpacity onPress={() => {user ? navigation.navigate("Settings") : alert("User not Authenticated !")}}>
                         <Ionicons name="settings" size={32} color="black" />
                     </TouchableOpacity>
                 </View>

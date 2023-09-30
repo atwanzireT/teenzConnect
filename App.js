@@ -27,6 +27,7 @@ const getStoredUserData = async () => {
     
     if (useremail && userpassword) {
       await signInWithEmailAndPassword(auth, useremail, userpassword);
+      console.log(useremail, " ", userpassword);
       console.log("User logged in successfully.");
     } else {
       console.log("Email or password not found.");
