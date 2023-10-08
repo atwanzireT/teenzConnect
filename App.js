@@ -15,6 +15,7 @@ import { getStorage } from "firebase/storage";
 import SettingsScreen from './src/screens/SettingScreen';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import CommentScreen from './src/screens/CommentScreen';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -55,6 +56,7 @@ export default function App() {
         <Stack.Screen name="EmailScreen" component={EmailScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PasswordScreen" component={PasswordScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Comments" component={CommentScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
 

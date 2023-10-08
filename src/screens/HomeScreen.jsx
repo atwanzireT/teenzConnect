@@ -8,7 +8,7 @@ import { getDatabase, ref, onValue } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "firebase/database";
 
-export default function HomeScreen({navigation}) {
+export default function HomeScreen({ navigation }) {
     const [postData, setPostData] = useState([]);
     const [user, setUser] = useState(null);
     const auth = getAuth();
@@ -20,8 +20,9 @@ export default function HomeScreen({navigation}) {
             const data = snapshot.val();
             if (data) {
                 const postsArray = Object.values(data);
-                setPostData(postsArray);
-                // console.log(postsArray);
+                // Reverse the postsArray
+                const reversedPostsArray = postsArray.reverse();
+                setPostData(reversedPostsArray);
             } else {
                 setPostData([]);
             }
@@ -33,37 +34,34 @@ export default function HomeScreen({navigation}) {
         };
     }, []);
 
-
-
     useEffect(() => {
-            try {
-              const auth = getAuth(); 
-              const user = auth.currentUser;
-          
-              if (user) {
-                // console.log(user)
+        try {
+            const auth = getAuth();
+            const user = auth.currentUser;
+
+            if (user) {
                 setUser(user);
-              } else {
+            } else {
                 console.log('No user is currently authenticated.');
-              }
-            } catch (error) {
-              console.error('Error:', error);
-              alert('An error occurred during authentication.');
             }
-          }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An error occurred during authentication.');
+        }
+    }
     );
 
-      
+
 
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.topbar}>
                 <Text style={styles.title}>TeenzConnect</Text>
                 <View style={styles.profile}>
-                    <TouchableOpacity onPress={() => {user ? navigation.navigate("MyProfile") : navigation.navigate("Login") }}>
+                    <TouchableOpacity onPress={() => { user ? navigation.navigate("MyProfile") : navigation.navigate("Login") }}>
                         <Ionicons name="person-circle" size={32} marginRight={10} color="black" />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => {user ? navigation.navigate("Settings") : alert("User not Authenticated !")}}>
+                    <TouchableOpacity onPress={() => { user ? navigation.navigate("Settings") : alert("User not Authenticated !") }}>
                         <Ionicons name="settings" size={32} color="black" />
                     </TouchableOpacity>
                 </View>
@@ -72,10 +70,12 @@ export default function HomeScreen({navigation}) {
                 {postData.map((post, index) => (
                     <PostCard
                         key={index}
-                        username="KusaFuaza"
+                        id = {post.id}
+                        username={post.author_name}
                         profileImageSource="https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg"
                         postTitle={post.text}
                         postImageSource={post.image}
+                        userid={post.user}
                     />
                 ))}
             </ScrollView>

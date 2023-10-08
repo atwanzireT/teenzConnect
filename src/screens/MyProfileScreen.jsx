@@ -5,11 +5,12 @@ import { Button } from 'react-native-paper';
 import COLORS from '../values/COLORS';
 import { ref as dbref, child, get, DataSnapshot, onValue } from "firebase/database";
 import { firebase_database, firebase_auth } from '../config/firebaseConfig';
+import UserPostCard from '../ui_components/userpostcard';
 
 // Create a functional component for the profile page
 const MyProfileScreen = () => {
-  const [userData, setUserData] = useState(null);
-  const [userid, setUserId] = useState(null);
+  const [userData, setUserData] = useState([]);
+  const [userPosts, setUserPosts] = useState([]);
 
   const uid = firebase_auth.currentUser?.uid;
 
@@ -33,22 +34,45 @@ const MyProfileScreen = () => {
     fetchUserData();
   }, [uid]);
 
-  // useEffect(() =>{
-  //   const fetchUserPosts = async() => {
-  //     if (uid) {
-  //       const postRef = dbref(firebase_database, `posts`);
-  //       onValue(postRef, (snapshot) => {
-  //         const postdata = snapshot.val();
-  //         if (data){
-  //           console.log(postdata);
-  //         }else{
-  //           console.log("No user posts found .")
-  //         }
-  //       })
-  //     }
-  //   }
-  //   fetchUserPosts();
-  // }, [])
+  useEffect(() => {
+    const postRef = dbref(firebase_database, "posts");
+
+    onValue(postRef, (snapshot) => {
+      const postdata = snapshot.val();
+      if (postdata) {
+        const postsArray = Object.values(postdata);
+        const filteredData = postsArray.filter(item => item.user === uid);
+        setUserPosts(filteredData);
+        console.log("Filtered data: ", filteredData);
+      } else {
+        setUserPosts([]);
+      }
+    })
+  }, []);
+
+  const selectProfile = () => {
+
+  }
+  const updateProfileImage = async() => {
+  try {
+              const result = await ImagePicker.launchImageLibraryAsync({
+                  mediaTypes: ImagePicker.MediaTypeOptions.All,
+                  allowsEditing: true,
+                  aspect: [7, 9],
+                  quality: 1,
+              });
+
+              if (!result.canceled) {
+                  const selectedAssets = result.assets;
+                  if (selectedAssets.length > 0) {
+                      const selectedImage = selectedAssets[0];
+                      setSelectedImage(selectedImage);
+                  }
+              }
+          } catch (error) {
+              console.error("Error picking image:", error);
+          }
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -80,18 +104,12 @@ const MyProfileScreen = () => {
       </View>
 
       <View style={styles.posts}>
-        <Image source={require("./images/a1.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a2.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a3.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a4.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a5.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a6.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a7.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a8.png")} style={styles.postImage} />
-        <Image source={require("./images/a9.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a10.png")} style={styles.postImage} />
-        <Image source={require("./images/a11.jpg")} style={styles.postImage} />
-        <Image source={require("./images/a12.jpg")} style={styles.postImage} />
+        {userPosts && userPosts.map((post, index) => ( 
+          <UserPostCard
+            key={index}
+            image_uri={post.image}
+          />
+        ))}
       </View>
     </ScrollView>
   );

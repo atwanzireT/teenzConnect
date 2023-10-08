@@ -6,8 +6,9 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import * as ImagePicker from 'expo-image-picker';
 import customstyles from "../values/styles";
 import { getStorage, ref as storageRef, uploadBytes, uploadBytesResumable, getDownloadURL } from "firebase/storage";
-import { getDatabase, ref as databaseRef, push, set } from "firebase/database";
+import { getDatabase, ref as databaseRef, push, set, onValue } from "firebase/database";
 import { onAuthStateChanged, auth, getAuth } from "firebase/auth";
+import { firebase_auth, firebase_database } from "../config/firebaseConfig";
 
 
 const PostScreen = ({navigation}) => {
@@ -16,17 +17,27 @@ const PostScreen = ({navigation}) => {
     const [loading, setLoading] = useState(false);
     const [userdata, setUserdata] = useState(null);
 
+    console.log(userdata);
+    const uid = firebase_auth.currentUser?.uid;
     useEffect(() => {
-        const auth = getAuth();
-        onAuthStateChanged(auth, (user) => {
-            if (user){
-                setUserdata(user);
-                console.log(userdata);
-            }else{
-                alert("Login to Post !");
+        const fetchUserData = async () => {
+            if (uid) {
+                const dbRef = databaseRef(firebase_database, `users/${uid}`);
+                onValue(dbRef, (snapshot) => {
+                    const data = snapshot.val();
+                    if (data) {
+                        setUserdata(data);
+                        console.log("User name:", data.displayname);
+                    } else {
+                        setUserdata(null);
+                        console.log("No User Data Found.");
+                    }
+                });
             }
-        })
-    })
+        };
+
+        fetchUserData();
+    }, [uid]);
 
     const sendPost = async () => {
         setLoading(true);
@@ -37,7 +48,7 @@ const PostScreen = ({navigation}) => {
             }
 
             const storage = getStorage();
-            const storageReference = storageRef(storage, 'your-storage-folder/' + selectedImage.uri.split('/').pop());
+            const storageReference = storageRef(storage, 'posts/' + selectedImage.uri.split('/').pop());
 
             // Upload the selected image to Firebase Storage
             const response = await fetch(selectedImage.uri);
@@ -61,9 +72,12 @@ const PostScreen = ({navigation}) => {
             const newPostKey = newPostRef.key;
 
             const postData = {
-                user : userdata.uid || "",
-                text: postText || "",  // If text is not provided, set it to an empty string
-                image: downloadURL || "",
+                id : newPostKey,
+                user : userdata?.uid,
+                author_img: userdata?.profile_img,
+                author_name: userdata?.displayname,
+                text: postText,  // If text is not provided, set it to an empty string
+                image: downloadURL,
             };
 
             // Use set to set data at a specific path
