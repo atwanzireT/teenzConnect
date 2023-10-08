@@ -4,13 +4,16 @@ import { Text } from "react-native-paper";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostCard from "../ui_components/postcard";
-import { getDatabase, ref, onValue } from "firebase/database";
+import { getDatabase, ref, onValue, off } from "firebase/database";
+import { ref as dbref } from "firebase/database";
 import { getAuth, onAuthStateChanged } from "firebase/auth";
 import "firebase/database";
+import { firebase_database } from "../config/firebaseConfig";
 
 export default function HomeScreen({ navigation }) {
     const [postData, setPostData] = useState([]);
     const [user, setUser] = useState(null);
+    const [likes, setLikes] = useState(null);
     const auth = getAuth();
 
     useEffect(() => {
@@ -50,8 +53,24 @@ export default function HomeScreen({ navigation }) {
         }
     }
     );
+    console.log("postId ", postData.id)
+    useEffect(() => {
+        const likeRef = dbref(firebase_database, `likes/${postData.id}`);
+        onValue(likeRef, (snapshot) => {
+            const likedata = snapshot.val();
 
+            if (likedata) {
+                const likeArray = Object.values(likedata);
 
+                var likeCount = 0
+                for (var likeCount of likeArray) {
+                    likeCount++
+                }
+                console.log("likeCount: ", likeCount);
+                setLikes(likeCount);
+            }
+        })
+    })
 
     return (
         <SafeAreaView style={styles.container}>
@@ -70,12 +89,13 @@ export default function HomeScreen({ navigation }) {
                 {postData.map((post, index) => (
                     <PostCard
                         key={index}
-                        id = {post.id}
+                        id={post.id}
                         username={post.author_name}
                         profileImageSource="https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg"
                         postTitle={post.text}
                         postImageSource={post.image}
                         userid={post.user}
+                        Like={likes}
                     />
                 ))}
             </ScrollView>

@@ -5,42 +5,41 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import COLORS from "../values/COLORS";
 import customstyles from "../values/styles";
 import { useNavigation } from "@react-navigation/native";
-import { ref as dbref, update, getDatabase, set, push } from "firebase/database";
+import { ref as dbref, update, getDatabase, set, push, onValue } from "firebase/database";
 import { firebase_database } from "../config/firebaseConfig";
 
 export default function PostCard(props) {
-  const { id, userid, username, postTitle, profileImageSource, postImageSource, initialLikes } = props;
-
+  const { id, userid, username, postTitle, profileImageSource, postImageSource, Likes } = props;
   const [liked, setLiked] = useState(false);
-  const [likes, setLikes] = useState(0);
+  const [likes, setLikes] = useState(false);
+
 
   const navigation = useNavigation();
   const handlePickPost = (id) => {
     navigation.navigate("Comments", { id })
   }
 
-const handleLike = () => {
-  const data = {
-    liked: true,
-    // Use a combination of author and postid as a composite key
-    author_postid: `${userid}_${id}`,
+  const handleLike = () => {
+    const data = {
+      liked: !liked, // Toggle the liked state
+      // Use a combination of author and postid as a composite key
+      author_postid: `${userid}_${id}`,
+    };
+
+    const likeRef = dbref(firebase_database, `likes/${id}/${userid}`);
+
+    // Try to set the like data, if it fails, it means the user has already liked the post
+    update(likeRef, data)
+      .then(() => {
+        // Successfully liked or unliked the post
+        setLiked(!liked); // Toggle the liked state in the component state
+        // setLikes(liked ? likes - 1 : likes + 1);
+      })
+      .catch((error) => {
+        // Handle the case where the user has already liked the post
+        console.error("Error liking or unliking the post:", error);
+      });
   };
-
-  const likeRef = dbref(firebase_database, `likes/${id}/${userid}`);
-  
-  // Try to set the like data, if it fails, it means the user has already liked the post
-  update(likeRef, data)
-    .then(() => {
-      // Successfully liked the post
-      setLiked(true);
-      setLikes(likes + 1);
-    })
-    .catch((error) => {
-      // Handle the case where the user has already liked the post
-      console.error("Error liking the post:", error);
-    });
-};
-
 
   return (
     <View style={styles.container}>
@@ -67,11 +66,11 @@ const handleLike = () => {
           <TouchableOpacity onPress={handleLike}>
             <View style={{ flexDirection: "row", alignItems: "center" }}>
               <Ionicons
-                name={liked ? "heart" : "heart-outline"}
-                size={30}
+                name={liked ? "heart" : "heart"}
+                size={32}
                 color={liked ? "red" : "black"}
               />
-              <Text style={{ marginLeft: 5 }}>{likes}</Text>
+              <Text style={{ marginLeft: 5 }}>{Likes}</Text>
             </View>
           </TouchableOpacity>
           <TouchableOpacity onPress={() => handlePickPost(id)}>

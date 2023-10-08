@@ -67,7 +67,7 @@ export default function CommentScreen({ route }) {
                 const commentsData = snapshot.val();
                 if (commentsData) {
                     const commentsArray = Object.values(commentsData);
-                    const filteredData = commentsArray.filter(item => item.id === id);
+                    const filteredData = commentsArray.filter(item => item.postid === id);
                     setComment(filteredData);
                 } else {
                     setComment([]);

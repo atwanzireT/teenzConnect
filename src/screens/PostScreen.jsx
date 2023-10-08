@@ -11,7 +11,7 @@ import { onAuthStateChanged, auth, getAuth } from "firebase/auth";
 import { firebase_auth, firebase_database } from "../config/firebaseConfig";
 
 
-const PostScreen = ({navigation}) => {
+const PostScreen = ({ navigation }) => {
     const [postText, setPostText] = useState("");
     const [selectedImage, setSelectedImage] = useState(null);
     const [loading, setLoading] = useState(false);
@@ -38,6 +38,7 @@ const PostScreen = ({navigation}) => {
 
         fetchUserData();
     }, [uid]);
+
 
     const sendPost = async () => {
         setLoading(true);
@@ -72,8 +73,8 @@ const PostScreen = ({navigation}) => {
             const newPostKey = newPostRef.key;
 
             const postData = {
-                id : newPostKey,
-                user : userdata?.uid,
+                id: newPostKey,
+                user: userdata?.uid,
                 author_img: userdata?.profile_img,
                 author_name: userdata?.displayname,
                 text: postText,  // If text is not provided, set it to an empty string
@@ -149,7 +150,7 @@ const PostScreen = ({navigation}) => {
                 </View>
                 {loading ? <ActivityIndicator size="small" /> :
                     <TouchableOpacity onPress={sendPost}>
-                        <Ionicons name="send" color = "#991b1b" size={40} style={styles.icon} />
+                        <Ionicons name="send" color="#991b1b" size={40} style={styles.icon} />
                     </TouchableOpacity>}
             </View>
         </SafeAreaProvider >
