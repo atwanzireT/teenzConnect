@@ -16,6 +16,7 @@ import SettingsScreen from './src/screens/SettingScreen';
 import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CommentScreen from './src/screens/CommentScreen';
+import PostScreen from './src/screens/PostScreen';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -25,7 +26,7 @@ const getStoredUserData = async () => {
   try {
     const useremail = await AsyncStorage.getItem('email');
     const userpassword = await AsyncStorage.getItem('password');
-    
+
     if (useremail && userpassword) {
       await signInWithEmailAndPassword(auth, useremail, userpassword);
       console.log(useremail, " ", userpassword);
@@ -57,6 +58,7 @@ export default function App() {
         <Stack.Screen name="PasswordScreen" component={PasswordScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Comments" component={CommentScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Post" component={PostScreen} options={{ headerShown: false }} />
       </Stack.Navigator>
     </NavigationContainer>
 

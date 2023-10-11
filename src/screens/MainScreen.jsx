@@ -6,8 +6,10 @@ import HomeScreen from "./HomeScreen";
 import PostScreen from "./PostScreen";
 import { StyleSheet } from "react-native";
 import SearchScreen from "./SearchScreen";
+import TopTabs from "./TopTab";
 
 const Tab = createBottomTabNavigator();
+
 
 export default function MainScreen() {
 
@@ -16,9 +18,10 @@ export default function MainScreen() {
             screenOptions={{
                 tabBarActiveTintColor: "#991b1b",
             }}>
-            <Tab.Screen name="Home" component={HomeScreen}
+            <Tab.Screen name="YConnect" component={TopTabs}
                 options={{
-                    headerShown: false,
+                    tabBarLabel:"Home",
+                    title:"YConnect",
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="home" color={color} size={size} />
                     ),
