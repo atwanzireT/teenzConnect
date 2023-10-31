@@ -5,8 +5,18 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import COLORS from "../values/COLORS";
 import customstyles from "../values/styles";
 import { useNavigation } from "@react-navigation/native";
-import { ref as dbref, set, onValue, getDatabase, update, remove } from "firebase/database";
-import { firebase_database } from "../config/firebaseConfig";
+import { firebase_database, firebase_firestore } from "../config/firebaseConfig";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  setDoc,
+  where,
+} from "firebase/firestore";
 
 export default function PostCard(props) {
   const { id, userid, username, postTitle, profileImageSource, postImageSource, likes } = props;
@@ -14,39 +24,66 @@ export default function PostCard(props) {
 
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const likeRef = dbref(firebase_database, `posts/${id}/likes/${userid}`);
-
-    // Check if the user has already liked the post
-    onValue(likeRef, (snapshot) => {
-      setLiked(snapshot.exists());
-    });
-  }, [id, userid]);
-
   const handlePickPost = () => {
-    navigation.navigate("Comments", { id });
-  }
+    navigation.navigate("Comments", { postId: id }); // Corrected the navigation parameter
+  };
 
-  const handleLike = () => {
-    const likeRef = dbref(firebase_database, `posts/${id}/likes/${userid}`);
+  const handlePickUser = () => {
+    navigation.navigate("UserProfile", { userId: userid }); // Corrected the navigation parameter
+  };
 
-    onValue(likeRef, (snapshot) => {
-      const data = snapshot.val();
-      if (!data) {
-        // User has not liked the post, so like it
-        set(likeRef, true);
+  const countLikes = async () => {
+    const likeRef = collection(firebase_firestore, "likes");
+    const q = query(likeRef, where("user", "==", userid), where("post", "==", id));
+
+    try {
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.docs.length > 0) {
+        // Like exists, setLiked to true
         setLiked(true);
       } else {
-        // User has already liked the post, so unlike it
-        remove(likeRef);
         setLiked(false);
       }
-    });
+    } catch (error) {
+      console.error("Error while querying Firestore:", error);
+    }
   };
+
+  const handleLike = async () => {
+    const likeRef = collection(firebase_firestore, "likes");
+    const q = query(likeRef, where("user", "==", userid), where("post", "==", id));
+
+    try {
+      const querySnapshot = await getDocs(q);
+      if (querySnapshot.docs.length > 0) {
+        // Like exists, delete it
+        const likeDoc = querySnapshot.docs[0];
+        await deleteDoc(likeDoc.ref);
+        setLiked(false);
+        console.log("Like deleted ...");
+      } else {
+        // Like doesn't exist, add it
+        const likeData = {
+          user: userid,
+          post: id,
+          liked: true,
+        };
+        await addDoc(likeRef, likeData);
+        setLiked(true);
+        console.log("Post liked ...");
+      }
+    } catch (error) {
+      console.error("Error while querying Firestore:", error);
+    }
+  };
+
+  useEffect(() => {
+    countLikes();
+  }, []);
 
   return (
     <View style={styles.container}>
-      <View style={styles.userInfo}>
+      <TouchableOpacity onPress={handlePickUser} style={styles.userInfo}>
         <Image
           style={styles.profileImage}
           source={{ uri: profileImageSource }}
@@ -55,7 +92,7 @@ export default function PostCard(props) {
           <Text style={styles.textBold800}>{username}</Text>
           <Text>{postTitle}</Text>
         </View>
-      </View>
+      </TouchableOpacity>
       <Image
         style={styles.postImage}
         source={{ uri: postImageSource }}
@@ -67,14 +104,19 @@ export default function PostCard(props) {
             <Ionicons
               name={liked ? "heart" : "heart-outline"}
               size={32}
-              color={liked ? "red" : "black"}
+              color={liked ? "#991b1b" : "black"}
             />
           </View>
         </TouchableOpacity>
         <TouchableOpacity onPress={handlePickPost}>
-          <Ionicons name="chatbubble" style={customstyles.ml_10} size={30} color={"#000"} />
+          <Ionicons
+            name="chatbubble-outline"
+            style={customstyles.ml_10}
+            size={30}
+            color={"#000"}
+          />
         </TouchableOpacity>
-        <Ionicons name="share" size={30} style={customstyles.ml_10} color={"#000"} />
+        <Ionicons name="share-outline" size={30} style={customstyles.ml_10} color={"#000"} />
       </View>
     </View>
   );

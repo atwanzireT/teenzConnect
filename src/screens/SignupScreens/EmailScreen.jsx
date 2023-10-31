@@ -15,7 +15,7 @@ const EmailScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Image source={require('../../../assets/icon.png')} style={styles.logo} />
-            <Text style={styles.heading}>Sign Up</Text>
+            <Text style={styles.heading}>Email</Text>
             <TextInput
                 mode="outlined"
                 label="Enter your Email"

@@ -36,8 +36,8 @@ const styles = StyleSheet.create({
   },
   postImage: {
     width: "100%",
-    height: undefined,
-    aspectRatio: 9 / 9,
+    borderRadius: 20,
+    aspectRatio: 1, // 1:1 aspect ratio
   },
   actions: {
     flexDirection: "row",
@@ -59,47 +59,22 @@ export default function InspireCard(props) {
 
   const navigation = useNavigation();
 
-  useEffect(() => {
-    const likeRef = dbref(firebase_database, `posts/${id}/likes/${userid}`);
-
-    // Check if the user has already liked the post
-    onValue(likeRef, (snapshot) => {
-      setLiked(snapshot.exists());
-    });
-  }, [id, userid]);
-
   const handlePickPost = () => {
     navigation.navigate("Comments", { id });
   }
-
-  const handleLike = () => {
-    const likeRef = dbref(firebase_database, `posts/${id}/likes/${userid}`);
-
-    onValue(likeRef, (snapshot) => {
-      const data = snapshot.val();
-      if (!data) {
-        // User has not liked the post, so like it
-        set(likeRef, true);
-        setLiked(true);
-      } else {
-        // User has already liked the post, so unlike it
-        remove(likeRef);
-        setLiked(false);
-      }
-    });
-  };
 
   return (
     <View style={styles.container}>
       <Image
         style={styles.postImage}
         source={{ uri: postImageSource }}
+        resizeMode="cover" // You can use 'cover' for maintaining aspect ratio while making the image flexible
       />
       <View style={styles.actions}>
         <Text style={{ marginLeft: 5 }}>{likes}</Text>
-        <TouchableOpacity onPress={handleLike}>
+        <TouchableOpacity>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
-            <Button mode="contained" buttonColor={COLORS.red_800} textColor="#fff">SAVE</Button>
+            <Button mode="contained" buttonColor={COLORS.red_800} textColor="#fff">KEEP</Button>
           </View>
         </TouchableOpacity>
         <TouchableOpacity >

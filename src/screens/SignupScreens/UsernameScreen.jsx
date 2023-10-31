@@ -15,7 +15,7 @@ const UsernameScreen = ({ navigation }) => {
     return (
         <View style={styles.container}>
             <Image source={require('../../../assets/icon.png')} style={styles.logo} />
-            <Text style={styles.heading}>Sign Up</Text>
+            <Image source={require('../../../assets/connect.png')} style={styles.logo} />
             <TextInput
                 mode="outlined"
                 label="Enter your Username"

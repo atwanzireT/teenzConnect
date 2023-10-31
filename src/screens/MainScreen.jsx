@@ -1,15 +1,12 @@
-import React, { useState } from "react";
+import React from "react";
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
-import ChatScreen from "./ChatScreen";
-import HomeScreen from "./HomeScreen";
 import PostScreen from "./PostScreen";
-import { StyleSheet } from "react-native";
 import SearchScreen from "./SearchScreen";
-import TopTabs from "./TopTab";
+import HomeScreen from "./HomeScreen";
+import ChatListScreen from "./ChatListScreen";
 
 const Tab = createBottomTabNavigator();
-
 
 export default function MainScreen() {
 
@@ -18,32 +15,39 @@ export default function MainScreen() {
             screenOptions={{
                 tabBarActiveTintColor: "#991b1b",
             }}>
-            <Tab.Screen name="YConnect" component={TopTabs}
+            <Tab.Screen name="Home" component={HomeScreen}
                 options={{
-                    tabBarLabel:"Home",
-                    title:"YConnect",
+                    tabBarLabel: "Home",
+                    tabBarShowLabel: false,
+                    headerShown:false,
                     tabBarIcon: ({ color, size }) => (
                         <MaterialCommunityIcons name="home" color={color} size={size} />
                     ),
                 }} />
-            <Tab.Screen name="Post" component={PostScreen} 
-            options={{ 
-                headerShown: false, 
-                tabBarIcon: ({ color, size }) => (
-                    <MaterialCommunityIcons name="note" color={color} size={size} />
-                ),}} />
-            <Tab.Screen name="Discover" component={SearchScreen} 
-            options={{ 
-                headerShown: false,
-                tabBarIcon: ({ color, size }) => (
-                    <MaterialCommunityIcons name="map-search" color={color} size={size} />
-                ),}} />
-            {/* <Tab.Screen name="Chats" component={ChatScreen} 
-            options={{ 
-                headerShown: false,
-                tabBarIcon: ({ color, size }) => (
-                    <MaterialCommunityIcons name="comment" color={color} size={size} />
-                ), }} /> */}
+            <Tab.Screen name="Post" component={PostScreen}
+                options={{
+                    headerShown: false,
+                    tabBarShowLabel: false,
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="pencil-box" color={color} size={size} />
+                    ),
+                }} />
+            <Tab.Screen name="Discover" component={SearchScreen}
+                options={{
+                    headerShown: false,
+                    tabBarShowLabel: false,
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="map-search" color={color} size={size} />
+                    ),
+                }} />
+            <Tab.Screen name="Chats" component={ChatListScreen}
+                options={{
+                    headerShown: true,
+                    tabBarShowLabel: false,
+                    tabBarIcon: ({ color, size }) => (
+                        <MaterialCommunityIcons name="send-circle" color={color} size={size} />
+                    ),
+                }} />
         </Tab.Navigator>
     )
 }

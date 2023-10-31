@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { StyleSheet, ScrollView, TouchableOpacity, View } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getDatabase, ref as dbref , onValue, off } from "firebase/database";
+import { getDatabase, ref as dbref, onValue, off } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import "firebase/database";
 import COLORS from "../values/COLORS";
@@ -52,34 +52,22 @@ export default function InspireScreen({ navigation }) {
             alert('An error occurred during authentication.');
         }
     });
-    
+
     return (
         <SafeAreaView>
-            {/* <View style={styles.topbar}>
-                <Text style={styles.title}>TeenzConnect</Text>
-                <View style={styles.profile}>
-                    <TouchableOpacity onPress={() => { user ? navigation.navigate("MyProfile") : navigation.navigate("Login") }}>
-                        <Ionicons name="person-circle" size={32} marginRight={10} color="black" />
-                    </TouchableOpacity>
-                    <TouchableOpacity onPress={() => { user ? navigation.navigate("Settings") : alert("User not Authenticated !") }}>
-                        <Ionicons name="settings" size={32} color="black" />
-                    </TouchableOpacity>
-                </View>
-            </View> */}
-        
-            <ScrollView style={{ marginTop:-20}}>
-                <View style={[customstyles.grid, customstyles.space_between]}>
-                {postData.map((post, index) => (
-                    <InspireCard
-                        key={index}
-                        id={post.id}
-                        profileImageSource="https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg"
-                        postTitle={post.text}
-                        postImageSource={post.image}
-                        userid={post.user}
-                        Like={likes}
-                    />
-                ))}
+            <ScrollView style={{ marginTop: -20 }}>
+                <View style={styles.grid}>
+                    {postData.map((post, index) => (
+                        <InspireCard
+                            key={index}
+                            id={post.id}
+                            profileImageSource="https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg"
+                            postTitle={post.text}
+                            postImageSource={post.image}
+                            userid={post.user}
+                            Like={likes}
+                        />
+                    ))}
                 </View>
             </ScrollView>
             {/* <TouchableOpacity
@@ -123,4 +111,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         elevation: 5,
     },
+    grid:{
+        flexDirection:"row",
+        flexWrap:"wrap",
+    }
 });

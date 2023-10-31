@@ -1,44 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { ScrollView, StyleSheet, View, ActivityIndicator } from "react-native";
-import { Text, TextInput } from "react-native-paper";
-import { ref as dbref, equalTo, onValue, orderByChild, query } from "firebase/database";
-import { firebase_database } from "../config/firebaseConfig";
+import { ScrollView, StyleSheet, View, ActivityIndicator, TouchableOpacity } from "react-native";
+import { Text, TextInput, Card, Avatar, IconButton } from "react-native-paper";
+import { query, ref as dbref, equalTo, onValue, orderByChild } from "firebase/database";
+import { getDocs, collection } from "firebase/firestore";
+import { firebase_database, firebase_firestore } from "../config/firebaseConfig";
 import customstyles from "../values/styles";
-import SearchCard from "../ui_components/searchCard";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-export default function SearchScreen() {
+export default function SearchScreen({ navigation }) {
   const [searchText, setSearchText] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true); // Initialize as true to show loading initially
 
   useEffect(() => {
-    // setError(null);
-
-    if (searchText) {
-      setIsLoading(true);
-      const searchRef = dbref(firebase_database, 'posts');
-
-      const searchQuery = query(
-        searchRef,
-        orderByChild("text"),
-        equalTo(searchText.toLowerCase())
-      );
-
-      onValue(searchQuery, (snapshot) => {
-        const data = snapshot.val() || {};
+    // Fetch posts from Firebase Firestore
+    const fetchPosts = async () => {
+      try {
+        const postCollection = collection(firebase_firestore, 'posts');
+        const querySnapshot = await getDocs(postCollection);
+        const posts = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setSearchResults(posts);
         setIsLoading(false);
-        setSearchResults(Object.values(data));
-        console.log(searchResults);
-      });
-    } else {
-      setSearchResults([]);
-    }
-  }, [searchText]);
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        setIsLoading(false);
+      }
+    };
 
+    fetchPosts();
+  }, []);
 
   return (
-    <SafeAreaProvider style={[customstyles.mt_20, customstyles.mh_10, styles.container]}>
+    <SafeAreaView style={[customstyles.mt_20, customstyles.mh_10, styles.container]}>
       <ScrollView>
         <View>
           <TextInput
@@ -52,20 +48,34 @@ export default function SearchScreen() {
             left={<TextInput.Icon icon="search-web" />}
           />
           <Text style={[customstyles.textbold_800, styles.fontText]}>HipTeenz For You.</Text>
-          {isLoading && <ActivityIndicator size="large" color="#991b1b" />}
-          {searchResults.map((result, index) => (
-            // <SearchCard key={index} data={result} />
-            <Text>{result.text}</Text>
-          ))}
+          {isLoading ? (
+            <ActivityIndicator size="large" color="#991b1b" />
+          ) : (
+            searchResults.map((result, index) => (
+              <Card style={customstyles.my_5} key={index} onPress={() => navigation.navigate("PostDetailScreen", { "postId": result.postId })}>
+                <Card.Title
+                  title={result.title}
+                  left={(props) => (
+                    <Avatar.Image {...props} source={{ uri: result.imageURL }} />
+                  )}
+                  right={(props) => (
+                    <View style={customstyles.grid}>
+                      <IconButton icon="arrow-right-circle" onPress={() => navigation.navigate("PostDetailScreen", { "postId": result.postId })} />
+                    </View>
+                  )}
+                />
+              </Card>
+            ))
+          )}
         </View>
       </ScrollView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    // justifyContent:"flex-start"
+    // Add your styles for the container if needed
   },
   fontText: {
     fontSize: 24,

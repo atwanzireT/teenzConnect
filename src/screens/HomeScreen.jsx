@@ -1,18 +1,30 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, ScrollView, TouchableOpacity } from "react-native";
+import { StyleSheet, ScrollView, TouchableOpacity, View, ActivityIndicator, Image } from "react-native";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import PostCard from "../ui_components/postcard";
-import { getDatabase, ref as dbref , onValue, off } from "firebase/database";
 import { getAuth } from "firebase/auth";
 import "firebase/database";
 import COLORS from "../values/COLORS";
+import { collection, getDocs } from "firebase/firestore";
+import { firebase_firestore } from "../config/firebaseConfig";
 
 const styles = StyleSheet.create({
+    container: {
+        flexGrow: 1,
+    },
     topbar: {
         flexDirection: "row",
         justifyContent: "space-between",
-        margin: 10,
+        marginHorizontal: 10,
+        marginVertical: 5,
+    },
+    logoImg: {
+        width: 100,
+        height: "auto",
+        justifyContent:"center",
+        justifyContent: "center",
+        resizeMode: 'contain',
     },
     title: {
         fontSize: 24,
@@ -27,7 +39,7 @@ const styles = StyleSheet.create({
     },
     floatingButton: {
         position: 'absolute',
-        bottom: 20,
+        bottom: 60,
         right: 20,
         backgroundColor: COLORS.red_800,
         width: 50,
@@ -37,34 +49,43 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         elevation: 5,
     },
+    fabStyle: {
+        bottom: 16,
+        right: 16,
+        position: 'absolute',
+    },
 });
 
 export default function HomeScreen({ navigation }) {
     const [postData, setPostData] = useState([]);
     const [user, setUser] = useState(null);
     const [likes, setLikes] = useState(null);
+    const [loading, setLoading] = useState(true);
+
     const auth = getAuth();
 
+
     useEffect(() => {
-        const dbRef = dbref(getDatabase(), "posts");
-
-        onValue(dbRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                const postsArray = Object.values(data);
-                // Reverse the postsArray
-                const reversedPostsArray = postsArray.reverse();
-                setPostData(reversedPostsArray);
-            } else {
-                setPostData([]);
+        // Fetch posts from Firebase Firestore
+        const fetchPosts = async () => {
+            try {
+                const postCollection = collection(firebase_firestore, 'posts');
+                const querySnapshot = await getDocs(postCollection);
+                const posts = querySnapshot.docs.map((doc) => ({
+                    id: doc.id,
+                    ...doc.data(),
+                }));
+                setPostData(posts);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching posts:', error);
+                setLoading(false);
             }
-        });
-
-        // Clean up the event listener when the component unmounts
-        return () => {
-            off(dbRef);
         };
+
+        fetchPosts();
     }, []);
+
 
     useEffect(() => {
         try {
@@ -80,12 +101,13 @@ export default function HomeScreen({ navigation }) {
             console.error('Error:', error);
             alert('An error occurred during authentication.');
         }
-    });
-    
+    }, []);
+
+
     return (
         <SafeAreaView>
-            {/* <View style={styles.topbar}>
-                <Text style={styles.title}>TeenzConnect</Text>
+            <View style={styles.topbar}>
+                <Image source={require('../../assets/connect.png')} style={styles.logoImg} />
                 <View style={styles.profile}>
                     <TouchableOpacity onPress={() => { user ? navigation.navigate("MyProfile") : navigation.navigate("Login") }}>
                         <Ionicons name="person-circle" size={32} marginRight={10} color="black" />
@@ -94,31 +116,29 @@ export default function HomeScreen({ navigation }) {
                         <Ionicons name="settings" size={32} color="black" />
                     </TouchableOpacity>
                 </View>
-            </View> */}
-        
-            <ScrollView style={{ marginTop:-20,}}>
-                {postData.map((post, index) => (
-                    <PostCard
-                        key={index}
-                        id={post.id}
-                        username={post.author_name}
-                        profileImageSource="https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg"
-                        postTitle={post.text}
-                        postImageSource={post.image}
-                        userid={post.user}
-                        Like={likes}
-                    />
-                ))}
-            </ScrollView>
-            <TouchableOpacity
-                style={styles.floatingButton}
-                onPress={() => {
-                    navigation.navigate('Post')
-                }}
-            >
-                <Ionicons name="add" size={40} color="white" />
-            </TouchableOpacity>
+            </View>
+
+            {loading ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color={COLORS.red_800} />
+                </View>
+            ) : (
+                <ScrollView style={{ marginTop: 10,  marginBottom:70}}>
+                    {postData.map((post, index) => (
+                        <PostCard
+                            key={index}
+                            id={post.postId}
+                            username={post.author_name}
+                            profileImageSource="https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg"
+                            postTitle={post.title}
+                            postImageSource={post.imageURL}
+                            userid={post.user}
+                        // Like={likes}
+                        />
+                    ))}
+                </ScrollView>
+            )}
+
         </SafeAreaView>
     );
 }
-

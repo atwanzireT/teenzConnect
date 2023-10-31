@@ -1,32 +1,35 @@
 import React, { useEffect, useState } from "react";
 import Ionicons from "@expo/vector-icons/Ionicons";
-import { getDatabase, ref as databaseRef, push, set, onValue } from "firebase/database";
 import { ScrollView, View, Image, TextInput, Button, StyleSheet, TouchableOpacity } from "react-native";
 import { ActivityIndicator, Text } from "react-native-paper";
-import { firebase_auth, firebase_database } from "../config/firebaseConfig";
+import { firebase_auth, firebase_database, firebase_firestore } from "../config/firebaseConfig";
+import { getFirestore, collection, query, where, getDocs, addDoc } from "firebase/firestore";
+
 
 export default function CommentScreen({ route }) {
     const [newComment, setNewComment] = useState("");
     const [loading, setLoading] = useState(false);
     const [userdata, setUserdata] = useState(null);
     const [comment, setComment] = useState([]);
+    const [uid, setUid] = useState(null);
 
     const { id } = route.params;
     console.log(newComment);
 
-    const uid = firebase_auth.currentUser?.uid;
     useEffect(() => {
+        try {
+            const uid = firebase_auth.currentUser?.uid;
+            setUid(uid);
+        } catch (error) {
+            console.error("No Uid Found .")
+        }
         const fetchUserData = async () => {
             if (uid) {
-                const dbRef = databaseRef(firebase_database, `users/${uid}`);
-                onValue(dbRef, (snapshot) => {
-                    const data = snapshot.val();
-                    if (data) {
-                        setUserdata(data);
-                    } else {
-                        setUserdata(null);
-                        console.log("No User Data Found.");
-                    }
+                const userRef = collection(firebase_firestore, 'users');
+                const q = query(userRef, where("uid", "==", uid));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((doc) => {
+                    setUserdata(doc.data());
                 });
             }
         };
@@ -34,54 +37,53 @@ export default function CommentScreen({ route }) {
         fetchUserData();
     }, [uid]);
 
+
     const handleNewComment = async () => {
-        if (newComment.trim !== "") {
+        if (newComment.trim() !== "") {
             setLoading(true);
 
-            const CommentRef = databaseRef(firebase_database, 'comments');
-            const newCommentRef = push(CommentRef);
+            // Create a reference to the 'comments' collection
+            const commentsRef = collection(firebase_firestore, 'comments');
 
-            const newCommentdata = {
+            // Create a new comment document
+            const newCommentData = {
                 postid: id,
                 commenterUid: userdata?.uid,
                 commenterName: userdata?.displayname,
                 commenterImage: userdata?.profile_img,
                 comment: newComment,
-            }
-            await set(newCommentRef, newCommentdata);
+            };
+
+            // Add the new comment document to Firestore
+            await addDoc(commentsRef, newCommentData);
+
             setNewComment("");
             setLoading(false);
-
         } else {
             setLoading(false);
-            console.log("No Comment !")
+            console.log("No Comment !");
         }
     }
 
     useEffect(() => {
         const fetchComments = async () => {
-            const CommentRef = databaseRef(firebase_database, 'comments');
-
-            // Attach an event listener to the comments node
-            onValue(CommentRef, (snapshot) => {
-                const commentsData = snapshot.val();
-                if (commentsData) {
-                    const commentsArray = Object.values(commentsData);
-                    const filteredData = commentsArray.filter(item => item.postid === id);
-                    setComment(filteredData);
-                } else {
-                    setComment([]);
-                }
+            const commentsRef = collection(firebase_firestore, 'comments');
+            const q = query(commentsRef, where("postid", "==", id));
+            const querySnapshot = await getDocs(q);
+            const commentsData = [];
+            querySnapshot.forEach((doc) => {
+                commentsData.push(doc.data());
             });
+            setComment(commentsData);
         };
-
+    
         fetchComments();
-    }, []);
+    }, [id]);
+    
 
     return (
         <View style={styles.container}>
             <ScrollView style={styles.commentsContainer}>
-                <Text style={styles.header}>Comments</Text>
                 {comment.map((cmt, index) => (
                     <View style={styles.commentContainer} key={index}>
                         <Image

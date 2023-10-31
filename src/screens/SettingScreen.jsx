@@ -4,14 +4,24 @@ import { Ionicons } from '@expo/vector-icons';
 import COLORS from '../values/COLORS';
 import { Switch } from 'react-native-paper';
 import { signOut } from 'firebase/auth';
-import { firebase_auth } from '../config/firebaseConfig';
+import { firebase_auth, firebase_firestore } from '../config/firebaseConfig';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { addDoc, collection, doc, setDoc } from 'firebase/firestore';
 
 export default function SettingsScreen({navigation}) {
-  const [pushNotifications, setPushNotifications] = useState(true);
+  const [pushNotifications, setPushNotifications] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
+  const handeUserSettings = async() => {
+    const uid = firebase_auth.currentUser?.uid;
+    const userSettingsRef = collection(firebase_firestore, "userSettings");
+
+    await setDoc(doc(userSettingsRef, uid),{
+      notifications: pushNotifications,
+      darkmode: darkMode,
+    })
+  }
   const togglePushNotifications = () => {
     setPushNotifications(!pushNotifications);
   };

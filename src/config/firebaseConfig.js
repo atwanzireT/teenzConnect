@@ -1,25 +1,24 @@
 import { getAuth } from 'firebase/auth';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { initializeAuth, getReactNativePersistence } from 'firebase/auth';
-import ReactNativeAsyncStorage from '@react-native-async-storage/async-storage';
 import { initializeApp } from 'firebase/app';
 import { getStorage } from 'firebase/storage';
 import { getDatabase } from 'firebase/database';
+import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
-    apiKey: "AIzaSyDnzHLHN5aAlL-BejZ89q-Guo7sp0PvZ7E",
-    authDomain: "teenzconnect-dc7fa.firebaseapp.com",
-    projectId: "teenzconnect-dc7fa",
-    storageBucket: "teenzconnect-dc7fa.appspot.com",
-    messagingSenderId: "569735618793",
-    appId: "1:569735618793:web:4e49aaee00b5ca54d95078"
+    apiKey: "AIzaSyBGILjor-sO9UeF304cGRF1zFw-5udTEzc",
+    authDomain: "connect-21942.firebaseapp.com",
+    projectId: "connect-21942",
+    storageBucket: "connect-21942.appspot.com",
+    messagingSenderId: "183779794423",
+    appId: "1:183779794423:web:2d2871882be65b6d71a2f2"
 }
 
 const app = initializeApp(firebaseConfig);
 const firebase_storage = getStorage(app);
 const firebase_database = getDatabase(app);
 const firebase_auth = getAuth(app);
+const firebase_firestore = getFirestore(app);
 
 export {
-    firebaseConfig, firebase_database, firebase_storage, firebase_auth
+    firebaseConfig, firebase_database, firebase_storage, firebase_auth, firebase_firestore
 }

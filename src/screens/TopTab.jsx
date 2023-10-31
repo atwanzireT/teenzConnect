@@ -6,9 +6,9 @@ const Tab = createMaterialTopTabNavigator();
 
 export default function TopTabs() {
     return (
-        <Tab.Navigator>
-            <Tab.Screen name="Home" component={HomeScreen} />
-            <Tab.Screen name="Inspire" component={InspireScreen} />
+        <Tab.Navigator screenOptions={{style: {height: 0}}}>
+            <Tab.Screen name="Home" component={HomeScreen} options={{tabBarShowLabel:false}} />
+            <Tab.Screen name="Inspire" component={InspireScreen} options={{tabBarShowLabel:false}}/>
         </Tab.Navigator>
     )
 }

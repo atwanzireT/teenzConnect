@@ -17,30 +17,13 @@ import { useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import CommentScreen from './src/screens/CommentScreen';
 import PostScreen from './src/screens/PostScreen';
+import PostDetailScreen from './src/screens/PostDetailScreen';
+import UserProfileScreen from './src/screens/userProfileScreen';
+import ChatRoomScreen from './src/screens/ChatRoomScreen';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const storage = getStorage(app);
-
-const getStoredUserData = async () => {
-  try {
-    const useremail = await AsyncStorage.getItem('email');
-    const userpassword = await AsyncStorage.getItem('password');
-
-    if (useremail && userpassword) {
-      await signInWithEmailAndPassword(auth, useremail, userpassword);
-      console.log(useremail, " ", userpassword);
-      console.log("User logged in successfully.");
-    } else {
-      console.log("Email or password not found.");
-    }
-  } catch (error) {
-    console.error(`Auto Login Failed: ${error.message}`);
-  }
-}
-
-getStoredUserData();
-
 
 const Stack = createNativeStackNavigator();
 
@@ -53,12 +36,15 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="MainScreen" component={MainScreen} options={{ headerShown: false }} />
         <Stack.Screen name="MyProfile" component={MyProfileScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="UserProfile" component={UserProfileScreen} options={{ headerShown: true, title:"User Profile" }} />
         <Stack.Screen name="UsernameScreen" component={UsernameScreen} options={{ headerShown: false }} />
         <Stack.Screen name="EmailScreen" component={EmailScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PasswordScreen" component={PasswordScreen} options={{ headerShown: false }} />
         <Stack.Screen name="Settings" component={SettingsScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="Comments" component={CommentScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="Comments" component={CommentScreen} options={{ headerShown: true }} />
         <Stack.Screen name="Post" component={PostScreen} options={{ headerShown: false }} />
+        <Stack.Screen name="PostDetailScreen" component={PostDetailScreen} options={{ headerShown: true }} />
+        <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ headerShown: true }} />
       </Stack.Navigator>
     </NavigationContainer>
 

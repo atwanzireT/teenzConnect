@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Button, Text, TextInput } from 'react-native-paper';
-import { getAuth, setPersistence, signInWithEmailAndPassword, browserSessionPersistence } from 'firebase/auth';
+import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ActivityIndicator, Button, TextInput } from 'react-native-paper';
+import { firebase_auth } from '../config/firebaseConfig';
 
 const LoginScreen = ({ navigation }) => {
     const [email, setEmail] = useState('');
@@ -10,11 +11,9 @@ const LoginScreen = ({ navigation }) => {
     const [isLoggingIn, setIsLoggingIn] = useState(false);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-   
     const handleLogin = async () => {
-
         if (!email || !password) {
-            alert('Please enter both email and password.');
+            Alert.alert('Please enter both email and password.');
             return;
         }
 
@@ -23,7 +22,7 @@ const LoginScreen = ({ navigation }) => {
         const auth = getAuth();
 
         try {
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const userCredential = await signInWithEmailAndPassword(firebase_auth, email, password);
             const user = userCredential.user;
             setIsLoggedIn(true);
 
@@ -36,26 +35,49 @@ const LoginScreen = ({ navigation }) => {
         } catch (error) {
             const errorMessage = error.message;
             setIsLoggingIn(false);
-            alert(`Login failed: ${errorMessage}`);
+            Alert.alert(`Login failed: ${errorMessage}`);
         }
-
     };
 
     useEffect(() => {
+        const getStoredUserData = async () => {
+            try {
+                setIsLoggingIn(true);
+                const useremail = await AsyncStorage.getItem('email');
+                const userpassword = await AsyncStorage.getItem('password');
+
+                if (useremail && userpassword) {
+                    setEmail(useremail);
+                    setPassword(userpassword);
+                    await signInWithEmailAndPassword(firebase_auth, useremail, userpassword);
+                    console.log(useremail, " ", userpassword);
+                    console.log("User logged in successfully.");
+                    navigation.navigate('MainScreen');
+                } else {
+                    console.log("Email or password not found.");
+                }
+            } catch (error) {
+                console.error(`Auto Login Failed: ${error.message}`);
+            } finally {
+                setIsLoggingIn(false);
+            }
+        };
+
+        getStoredUserData();
+
         AsyncStorage.getItem('userLoggedIn').then((value) => {
             if (value === 'true') {
                 setIsLoggedIn(true);
             }
         });
-    }, []);
+    }, [navigation]);
 
 
     return (
         <View style={styles.container}>
-
             <View style={{ alignItems: "center", width: "90%", marginHorizontal: 20 }}>
                 <Image source={require('../../assets/icon.png')} style={styles.logo} />
-                <Text style={styles.heading}>Login</Text>
+                <Image source={require('../../assets/connect.png')} style={styles.logoText} />
                 <TextInput
                     mode="outlined"
                     label="Email"
@@ -71,20 +93,20 @@ const LoginScreen = ({ navigation }) => {
                     outlineColor='#991b1b'
                     value={password}
                     onChangeText={(text) => setPassword(text)}
-                    secureTextEntry={true} // Hide password characters
+                    secureTextEntry={true}
                     style={styles.input}
                 />
                 {isLoggingIn ? (
-                    <ActivityIndicator size="large" color="#991b1b" />
+                    <ActivityIndicator size="small" color="#991b1b" />
                 ) : (
-                    <>
+                    <View style={{ width: "100%" }}>
                         <TouchableOpacity onPress={handleLogin}>
                             <Button style={styles.button} mode="contained" buttonColor="#991b1b" >Login</Button>
                         </TouchableOpacity>
                         <TouchableOpacity onPress={() => { navigation.navigate("UsernameScreen") }}>
-                            <Button style={styles.noAcc}>Don't Have An Account .</Button>
+                            <Button style={styles.noAcc} textColor='#991b1b'>Don't Have An Account .</Button>
                         </TouchableOpacity>
-                    </>
+                    </View>
 
                 )}
             </View>
@@ -112,6 +134,12 @@ const styles = StyleSheet.create({
     },
     button: {
         width: "100%",
+    },
+    logoText: {
+        width: 90,
+        height: 50,
+        justifyContent: "center",
+        resizeMode: 'contain',
     },
     logo: {
         width: 90,

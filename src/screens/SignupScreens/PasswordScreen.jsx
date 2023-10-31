@@ -5,7 +5,8 @@ import { Button, Text, TextInput } from 'react-native-paper';
 import userinfo from '../NewUserInfo';
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
 import firebase from 'firebase/app';
-import { set, ref as dbref, getDatabase } from 'firebase/database';
+import { getFirestore, collection, addDoc } from 'firebase/firestore';
+
 
 
 const PasswordScreen = ({ navigation }) => {
@@ -13,43 +14,47 @@ const PasswordScreen = ({ navigation }) => {
 
     const handleSignup = async () => {
         const auth = getAuth();
-        userinfo.password = password
-        console.log(userinfo);
-
-        await createUserWithEmailAndPassword(auth ,userinfo.email, userinfo.password)
-            .then(() => {
-                const user = auth.currentUser;
-                const db = getDatabase();
-                    set(dbref(db, 'users/' + user.uid), {
-                        displayname: userinfo.username,
-                        email: userinfo.email,
-                        uid: user.uid || "",
-                        profile_img: "",
-                    }).then(() => {
-                        console.log('User data saved to the database.');
-                        console.log('User email:', user.email);
-                        navigation.navigate("MainScreen");
-                    }).catch((error) => {
-                        console.error('Error saving user data:', error);
-                    });
-            })
-            .catch((error) => {
-                if (error.code === 'auth/email-already-in-use') {
-                    alert('That email address is already in use!');
-                }
-
-                if (error.code === 'auth/invalid-email') {
-                   alert('That email address is invalid!');
-                }
-
-                console.error(error);
-            });
+        userinfo.password = password;
+    
+        try {
+            // Create a new user in Firebase Authentication
+            const userCredential = await createUserWithEmailAndPassword(auth, userinfo.email, userinfo.password);
+            const user = userCredential.user;
+    
+            // Initialize Firestore
+            const db = getFirestore();
+    
+            // Define the data to be saved to Firestore
+            const userData = {
+                displayname: userinfo.username,
+                email: userinfo.email,
+                uid: user.uid || "",
+                profile_img: "",
+            };
+    
+            // Add the user data to a Firestore collection
+            const userRef = collection(db, 'users');
+            const newUserDoc = await addDoc(userRef, userData);
+    
+            console.log('User data saved to Firestore.');
+            console.log('User email:', user.email);
+            navigation.navigate("MainScreen");
+        } catch (error) {
+            if (error.code === 'auth/email-already-in-use') {
+                alert('That email address is already in use!');
+            } else if (error.code === 'auth/invalid-email') {
+                alert('That email address is invalid!');
+            }
+    
+            console.error(error);
+        }
     };
+    
 
     return (
         <View style={styles.container}>
             <Image source={require('../../../assets/icon.png')} style={styles.logo} />
-            <Text style={styles.heading}>Sign Up</Text>
+            <Text style={styles.heading}>Password</Text>
             <TextInput
                 mode="outlined"
                 label="Enter your Password"

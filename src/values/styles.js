@@ -23,6 +23,9 @@ const customstyles = StyleSheet.create({
     ml_10:{
         marginLeft:10,
     },
+    my_5:{
+        marginVertical:5,
+    },
     my_10:{
         marginVertical:10,
     },
