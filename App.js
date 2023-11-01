@@ -20,6 +20,7 @@ import PostScreen from './src/screens/PostScreen';
 import PostDetailScreen from './src/screens/PostDetailScreen';
 import UserProfileScreen from './src/screens/userProfileScreen';
 import ChatRoomScreen from './src/screens/ChatRoomScreen';
+import dataConstants from './src/values/CONSTANTS';
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
@@ -29,6 +30,9 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   const [user, setuser] = useState(null);
+  const [chatTitle, setChatTitle] = useState("Chat");
+
+
   return (
     <NavigationContainer>
       <Stack.Navigator>
@@ -36,7 +40,7 @@ export default function App() {
         <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: false }} />
         <Stack.Screen name="MainScreen" component={MainScreen} options={{ headerShown: false }} />
         <Stack.Screen name="MyProfile" component={MyProfileScreen} options={{ headerShown: false }} />
-        <Stack.Screen name="UserProfile" component={UserProfileScreen} options={{ headerShown: true, title:"User Profile" }} />
+        <Stack.Screen name="UserProfile" component={UserProfileScreen} options={{ headerShown: true, title: "User Profile" }} />
         <Stack.Screen name="UsernameScreen" component={UsernameScreen} options={{ headerShown: false }} />
         <Stack.Screen name="EmailScreen" component={EmailScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PasswordScreen" component={PasswordScreen} options={{ headerShown: false }} />
@@ -44,7 +48,7 @@ export default function App() {
         <Stack.Screen name="Comments" component={CommentScreen} options={{ headerShown: true }} />
         <Stack.Screen name="Post" component={PostScreen} options={{ headerShown: false }} />
         <Stack.Screen name="PostDetailScreen" component={PostDetailScreen} options={{ headerShown: true }} />
-        <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ headerShown: true }} />
+        <Stack.Screen name="ChatRoom" component={ChatRoomScreen} options={{ headerShown: true, title: "Chat" }} />
       </Stack.Navigator>
     </NavigationContainer>
 

@@ -1,28 +1,38 @@
-// ChatRoomScreen.js
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
 import { GiftedChat } from 'react-native-gifted-chat';
-import { collection, query, where, addDoc, onSnapshot, or } from 'firebase/firestore'; // Firestore imports
+import {
+  collection,
+  query,
+  where,
+  addDoc,
+  onSnapshot,
+  orderBy,
+} from 'firebase/firestore'; // Firestore imports
 import { firebase_firestore, firebase_auth } from '../config/firebaseConfig';
+import TitleBar from '../ui_components/titleBar';
 
 function ChatRoomScreen({ route }) {
   const [messages, setMessages] = useState([]);
-  const {userId, roomName } = route.params;
-
+  const { userId, roomName } = route.params;
   const uid = firebase_auth.currentUser?.uid;
 
   const roomId = userId + uid;
   const otherId = uid + userId;
 
-  const chatRef = collection(firebase_firestore, 'chats'); // Assuming 'chats' is the collection name
+  const chatRef = collection(firebase_firestore, 'chats');
 
-  // Create a query to filter messages by roomId
-  const roomQuery = query(chatRef, or(where('roomId', '==', roomId), where('roomId', '==', otherId)));
+  // Create a query to filter messages by roomId and order by 'createdAt'
+  const roomQuery = query(
+    chatRef,
+    where('roomId', 'in', [roomId, otherId]),
+    orderBy('createdAt')
+  );
 
   // Function to send a new message to Firestore
-  const sendToFirestore = async (newMessages) => {
+  const sendToFirestore = async (newMessage) => {
     try {
-      await addDoc(chatRef, newMessages[0]); // Assuming newMessages is an array with a single message
+      await addDoc(chatRef, newMessage);
     } catch (error) {
       console.error('Error sending message to Firestore: ', error);
     }
@@ -41,28 +51,36 @@ function ChatRoomScreen({ route }) {
     });
 
     return () => {
-      unsubscribe(); // Unsubscribe from Firestore updates when the component unmounts
+      unsubscribe();
     };
   }, []);
 
   const onSend = (newMessages = []) => {
     // Add the user's ID and room ID to the message before sending
-    newMessages[0].user._id = uid;
-    newMessages[0].roomId = roomId;
+    const newMessage = {
+      ...newMessages[0],
+      user: {
+        _id: uid,
+        avatar:
+          'https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg',
+      },
+      roomId: roomId,
+    };
 
     // Update the state with the new message
-    setMessages((previousMessages) => GiftedChat.append(previousMessages, newMessages));
+    setMessages((previousMessages) => GiftedChat.append(previousMessages, newMessage));
 
     // Send the message to Firestore
-    sendToFirestore(newMessages);
+    sendToFirestore(newMessage);
   };
 
   return (
     <View style={{ flex: 1 }}>
+      <TitleBar/>
       <GiftedChat
         messages={messages}
-        onSend={(newMessages) => onSend(newMessages)}
-        user={{ _id: uid, avatar: "https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg" }}
+        onSend={onSend}
+        user={{ _id: uid }}
         isTyping={true}
       />
     </View>

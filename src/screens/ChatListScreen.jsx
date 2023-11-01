@@ -4,15 +4,15 @@ import { View, Text, FlatList, TouchableOpacity, StyleSheet, Image } from 'react
 import { collection, query, where, getDocs } from 'firebase/firestore'; // Updated Firestore imports
 import { firebase_auth, firebase_firestore } from '../config/firebaseConfig';
 import customstyles from '../values/styles';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import dataConstants from '../values/CONSTANTS';
 
 const ChatListScreen = ({ navigation }) => {
   const [users, setUsers] = useState([]);
 
-  // Removed the userPosts state as it's not used in this code.
-
   console.log("Profile User Data :", users);
 
-  const uid = firebase_auth.currentUser?.uid;
+  const uid = firebase_auth.currentUser?.uid; 
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -44,15 +44,15 @@ const ChatListScreen = ({ navigation }) => {
         keyExtractor={(user) => user.uid}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={[styles.chatRoom]}
-            onPress={() =>
+            style={styles.chatRoom}
+            onPress={() => {
               navigation.navigate('ChatRoom', {
                 userId: item.uid,
                 roomName: item.displayname,
-              })
-            }
+              });
+            }}
           >
-            <View style={[customstyles.grid]}>
+            <View style={customstyles.grid}>
               <Image
                 source={{ uri: 'https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg' }}
                 style={styles.profileImage}
@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 50,
-    marginRight:20,
+    marginRight: 20,
   },
 });
 
