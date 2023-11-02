@@ -8,7 +8,7 @@ import {
   addDoc,
   onSnapshot,
   orderBy,
-} from 'firebase/firestore'; // Firestore imports
+} from 'firebase/firestore';
 import { firebase_firestore, firebase_auth } from '../config/firebaseConfig';
 import TitleBar from '../ui_components/titleBar';
 
@@ -47,7 +47,8 @@ function ChatRoomScreen({ route }) {
           createdAt: data.createdAt.toDate(),
         };
       });
-      setMessages(chatMessages);
+      const sortedMessages = chatMessages.sort((a, b) => a.createdAt - b.createdAt);
+      setMessages(sortedMessages);
     });
 
     return () => {
@@ -66,9 +67,6 @@ function ChatRoomScreen({ route }) {
       },
       roomId: roomId,
     };
-
-    // Update the state with the new message
-    setMessages((previousMessages) => GiftedChat.append(previousMessages, newMessage));
 
     // Send the message to Firestore
     sendToFirestore(newMessage);
