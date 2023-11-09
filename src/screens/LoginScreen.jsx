@@ -1,4 +1,4 @@
-import { Image, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { Alert, Image, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { useEffect, useState } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';

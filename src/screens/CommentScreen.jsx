@@ -13,8 +13,8 @@ export default function CommentScreen({ route }) {
     const [comment, setComment] = useState([]);
     const [uid, setUid] = useState(null);
 
-    const { id } = route.params;
-    console.log(newComment);
+    const { postId } = route.params;
+    console.log("userData: ", userdata);
 
     useEffect(() => {
         try {
@@ -23,17 +23,26 @@ export default function CommentScreen({ route }) {
         } catch (error) {
             console.error("No Uid Found .")
         }
+
         const fetchUserData = async () => {
-            if (uid) {
-                const userRef = collection(firebase_firestore, 'users');
-                const q = query(userRef, where("uid", "==", uid));
-                const querySnapshot = await getDocs(q);
-                querySnapshot.forEach((doc) => {
-                    setUserdata(doc.data());
-                });
+            try {
+                const uid = firebase_auth.currentUser?.uid;
+        
+                if (uid) {
+                    const userRef = collection(firebase_firestore, 'users');
+                    const q = query(userRef, where("uid", "==", uid));
+                    const querySnapshot = await getDocs(q);
+                    querySnapshot.forEach((doc) => {
+                        setUserdata(doc.data());
+                    });
+                } else {
+                    console.log('User ID is undefined.');
+                }
+            } catch (error) {
+                console.error('Error fetching user data:', error);
             }
         };
-
+        
         fetchUserData();
     }, [uid]);
 
@@ -47,7 +56,7 @@ export default function CommentScreen({ route }) {
 
             // Create a new comment document
             const newCommentData = {
-                postid: id,
+                postid: postId,
                 commenterUid: userdata?.uid,
                 commenterName: userdata?.displayname,
                 commenterImage: userdata?.profile_img,
@@ -57,6 +66,9 @@ export default function CommentScreen({ route }) {
             // Add the new comment document to Firestore
             await addDoc(commentsRef, newCommentData);
 
+            // Add the new comment to the comments list for immediate display
+            setComment([...comment, newCommentData]);
+
             setNewComment("");
             setLoading(false);
         } else {
@@ -64,11 +76,10 @@ export default function CommentScreen({ route }) {
             console.log("No Comment !");
         }
     }
-
     useEffect(() => {
         const fetchComments = async () => {
             const commentsRef = collection(firebase_firestore, 'comments');
-            const q = query(commentsRef, where("postid", "==", id));
+            const q = query(commentsRef, where("postid", "==", postId));
             const querySnapshot = await getDocs(q);
             const commentsData = [];
             querySnapshot.forEach((doc) => {
@@ -76,10 +87,10 @@ export default function CommentScreen({ route }) {
             });
             setComment(commentsData);
         };
-    
+
         fetchComments();
-    }, [id]);
-    
+    }, [postId]);
+
 
     return (
         <View style={styles.container}>

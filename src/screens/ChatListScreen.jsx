@@ -49,6 +49,7 @@ const ChatListScreen = ({ navigation }) => {
               navigation.navigate('ChatRoom', {
                 userId: item.uid,
                 roomName: item.displayname,
+                username: item.displayname,
               });
             }}
           >

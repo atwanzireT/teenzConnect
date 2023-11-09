@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View } from 'react-native';
-import { GiftedChat } from 'react-native-gifted-chat';
+import { GiftedChat, Bubble } from 'react-native-gifted-chat'; // Import Bubble component
 import {
   collection,
   query,
@@ -14,22 +14,20 @@ import TitleBar from '../ui_components/titleBar';
 
 function ChatRoomScreen({ route }) {
   const [messages, setMessages] = useState([]);
-  const { userId, roomName } = route.params;
-  const uid = firebase_auth.currentUser?.uid;
+  const { userId, roomName, username } = route.params;
+  const currentUserId = firebase_auth.currentUser?.uid;
 
-  const roomId = userId + uid;
-  const otherId = uid + userId;
+  const roomId = userId + currentUserId;
+  const otherId = currentUserId + userId;
 
   const chatRef = collection(firebase_firestore, 'chats');
 
-  // Create a query to filter messages by roomId and order by 'createdAt'
   const roomQuery = query(
     chatRef,
     where('roomId', 'in', [roomId, otherId]),
     orderBy('createdAt')
   );
 
-  // Function to send a new message to Firestore
   const sendToFirestore = async (newMessage) => {
     try {
       await addDoc(chatRef, newMessage);
@@ -47,7 +45,7 @@ function ChatRoomScreen({ route }) {
           createdAt: data.createdAt.toDate(),
         };
       });
-      const sortedMessages = chatMessages.sort((a, b) => a.createdAt - b.createdAt);
+      const sortedMessages = chatMessages.sort((a, b) => b.createdAt - a.createdAt);
       setMessages(sortedMessages);
     });
 
@@ -57,29 +55,38 @@ function ChatRoomScreen({ route }) {
   }, []);
 
   const onSend = (newMessages = []) => {
-    // Add the user's ID and room ID to the message before sending
     const newMessage = {
       ...newMessages[0],
       user: {
-        _id: uid,
-        avatar:
-          'https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg',
+        _id: currentUserId,
+        // avatar: 'YOUR_AVATAR_URL_HERE',
       },
       roomId: roomId,
     };
 
-    // Send the message to Firestore
     sendToFirestore(newMessage);
   };
 
   return (
-    <View style={{ flex: 1 }}>
-      <TitleBar/>
+    <View style={{ flex: 1, backgroundColor: 'lightgray' }}>
       <GiftedChat
         messages={messages}
         onSend={onSend}
-        user={{ _id: uid }}
+        user={{ _id: currentUserId }}
         isTyping={true}
+        renderBubble={(props) => (
+          <Bubble
+            {...props}
+            wrapperStyle={{
+              right: {
+                backgroundColor: 'red', // Set the primary color to red for your messages
+              },
+              left: {
+                backgroundColor: 'white', // Background color for received messages
+              },
+            }}
+          />
+        )}
       />
     </View>
   );

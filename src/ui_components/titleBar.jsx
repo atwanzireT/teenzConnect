@@ -15,7 +15,8 @@ export default function TitleBar({ title, onBackPress }) {
 
 const styles = StyleSheet.create({
   titleBar: {
-    backgroundColor: "blue",
+    backgroundColor: "white",
+    marginTop:30,
     height: 60,
     flexDirection: "row",
     alignItems: "center",

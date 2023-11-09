@@ -6,8 +6,10 @@ import PostCard from "../ui_components/postcard";
 import { getAuth } from "firebase/auth";
 import "firebase/database";
 import COLORS from "../values/COLORS";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { firebase_firestore } from "../config/firebaseConfig";
+import { RefreshControl } from "react-native";
+import { Text } from "react-native-paper";
 
 const styles = StyleSheet.create({
     container: {
@@ -54,6 +56,10 @@ const styles = StyleSheet.create({
         right: 16,
         position: 'absolute',
     },
+    logotxt: {
+        fontSize: 20,
+        alignItems: "center",
+    }
 });
 
 export default function HomeScreen({ navigation }) {
@@ -61,16 +67,18 @@ export default function HomeScreen({ navigation }) {
     const [user, setUser] = useState(null);
     const [likes, setLikes] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [refreshing, setRefreshing] = useState(true);
 
     const auth = getAuth();
-
 
     useEffect(() => {
         // Fetch posts from Firebase Firestore
         const fetchPosts = async () => {
             try {
                 const postCollection = collection(firebase_firestore, 'posts');
-                const querySnapshot = await getDocs(postCollection);
+                const querySnapshot = await getDocs(
+                    query(postCollection, orderBy('created', 'desc'))
+                );
                 const posts = querySnapshot.docs.map((doc) => ({
                     id: doc.id,
                     ...doc.data(),
@@ -82,6 +90,7 @@ export default function HomeScreen({ navigation }) {
                 setLoading(false);
             }
         };
+        
 
         fetchPosts();
     }, []);
@@ -103,11 +112,26 @@ export default function HomeScreen({ navigation }) {
         }
     }, []);
 
+    const onRefresh = async () => {
+        setRefreshing(true);
+        await fetchPosts();
+        setRefreshing(false);
+    };
+    
+    
 
     return (
-        <SafeAreaView>
+        <SafeAreaView
+        refreshControl={
+            <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[COLORS.red_800]}
+            />
+        }>
             <View style={styles.topbar}>
-                <Image source={require('../../assets/connect.png')} style={styles.logoImg} />
+                {/* <Image source={require('../../assets/connect.png')} style={styles.logoImg} /> */}
+                <Text  style={styles.logotxt}>TeenConnect</Text>
                 <View style={styles.profile}>
                     <TouchableOpacity onPress={() => { user ? navigation.navigate("MyProfile") : navigation.navigate("Login") }}>
                         <Ionicons name="person-circle" size={32} marginRight={10} color="black" />
@@ -132,7 +156,8 @@ export default function HomeScreen({ navigation }) {
                             profileImageSource="https://2.bp.blogspot.com/-UpC5KUoUGM0/V7InSApZquI/AAAAAAAAAOA/7GwJUqTplMM7JdY6nCAnvXIi8BD6NnjPQCK4B/s1600/albert_einstein_by_zuzahin-d5pcbug.jpg"
                             postTitle={post.title}
                             postImageSource={post.imageURL}
-                            userid={post.user}
+                            userid={user?.uid}
+                            email = {user?.email}
                         // Like={likes}
                         />
                     ))}

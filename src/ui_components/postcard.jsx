@@ -5,81 +5,82 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import COLORS from "../values/COLORS";
 import customstyles from "../values/styles";
 import { useNavigation } from "@react-navigation/native";
-import { firebase_database, firebase_firestore } from "../config/firebaseConfig";
+import { firebase_auth, firebase_firestore } from "../config/firebaseConfig";
 import {
   addDoc,
   collection,
   deleteDoc,
-  doc,
-  getDoc,
   getDocs,
   query,
-  setDoc,
   where,
 } from "firebase/firestore";
 
-export default function PostCard(props) {
-  const { id, userid, username, postTitle, profileImageSource, postImageSource, likes } = props;
+const PostCard = (props) => {
+  const { id, userid, email, username, postTitle, profileImageSource, postImageSource, likes } = props;
   const [liked, setLiked] = useState(false);
-
   const navigation = useNavigation();
 
+
   const handlePickPost = () => {
-    navigation.navigate("Comments", { postId: id }); // Corrected the navigation parameter
+    navigation.navigate("Comments", { postId: id });
   };
 
   const handlePickUser = () => {
-    navigation.navigate("UserProfile", { userId: userid }); // Corrected the navigation parameter
+    navigation.navigate("UserProfile", { userId: userid });
   };
 
-  const countLikes = async () => {
-    const likeRef = collection(firebase_firestore, "likes");
-    const q = query(likeRef, where("user", "==", userid), where("post", "==", id));
+  const likesCollectionRef = collection(firebase_firestore, "likes");
+  const likeQuery = query(
+    likesCollectionRef,
+    where("user", "==", userid),
+    where("post", "==", id)
+  );
 
+  const checkIfUserLikedPost = async (userId, postId) => {
     try {
-      const querySnapshot = await getDocs(q);
-      if (querySnapshot.docs.length > 0) {
-        // Like exists, setLiked to true
-        setLiked(true);
-      } else {
-        setLiked(false);
-      }
+      const querySnapshot = await getDocs(likeQuery);
+      setLiked(querySnapshot.docs.length > 0);
     } catch (error) {
-      console.error("Error while querying Firestore:", error);
+      console.error("Error querying Firestore:", error.message);
+      // Handle specific errors if needed
     }
   };
 
   const handleLike = async () => {
-    const likeRef = collection(firebase_firestore, "likes");
-    const q = query(likeRef, where("user", "==", userid), where("post", "==", id));
-
+    const currentLikesCollectionRef = collection(firebase_firestore, "likes");
+    const currentLikeQuery = query(
+      currentLikesCollectionRef,
+      where("user", "==", userid),
+      where("post", "==", id)
+    );
+  
     try {
-      const querySnapshot = await getDocs(q);
+      const querySnapshot = await getDocs(currentLikeQuery);
+  
       if (querySnapshot.docs.length > 0) {
-        // Like exists, delete it
         const likeDoc = querySnapshot.docs[0];
         await deleteDoc(likeDoc.ref);
         setLiked(false);
         console.log("Like deleted ...");
       } else {
-        // Like doesn't exist, add it
         const likeData = {
           user: userid,
           post: id,
           liked: true,
+          user_email: email,
         };
-        await addDoc(likeRef, likeData);
+        await addDoc(currentLikesCollectionRef, likeData);
         setLiked(true);
         console.log("Post liked ...");
       }
     } catch (error) {
       console.error("Error while querying Firestore:", error);
     }
-  };
+  };  
 
   useEffect(() => {
-    countLikes();
-  }, []);
+    checkIfUserLikedPost(userid, id);
+  }, [userid, id]);
 
   return (
     <View style={styles.container}>
@@ -120,7 +121,7 @@ export default function PostCard(props) {
       </View>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -161,3 +162,5 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
 });
+
+export default PostCard;
